@@ -1,0 +1,26 @@
+menu "Adaptive Key Options"
+
+config ZMK_ADAPTIVE_KEY_MAX_TRIGGER_CONDITIONS
+    int "Maximum number of adaptive key triggers"
+    default 32
+
+config ZMK_ADAPTIVE_KEY_MAX_BINDINGS
+    int "Maximum number of trigger bindings"
+    default 4
+
+config ZMK_ADAPTIVE_KEY_WAIT_MS
+    int "Time to wait between key presses when binding multiple behaviors"
+    default 5
+
+config ZMK_ADAPTIVE_KEY_TAP_MS
+    int "Time to hold key presses when binding multiple behaviors"
+    default 5
+
+#Adaptive key options
+endmenu
+
+DT_COMPAT_ZMK_BEHAVIOR_ADAPTIVE_KEY := zmk,behavior-adaptive-key
+
+config ZMK_BEHAVIOR_ADAPTIVE_KEY
+    bool
+    default $(dt_compat_enabled,$(DT_COMPAT_ZMK_BEHAVIOR_ADAPTIVE_KEY))

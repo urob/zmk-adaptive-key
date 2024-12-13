@@ -1,0 +1,12 @@
+#include "../behavior_keymap.dtsi"
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,1,10)
+        ZMK_MOCK_RELEASE(0,1,200)
+        // Release adaptive-key before end of event queue. This tests that the behavior
+        // binding is queued to be pressed and released in the correct order.
+        ZMK_MOCK_PRESS(1,1,10)
+        ZMK_MOCK_RELEASE(1,1,100)
+    >;
+};

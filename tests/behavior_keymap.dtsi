@@ -1,0 +1,41 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    behaviors {
+        adaptive_key: adaptive_key {
+            compatible = "zmk,behavior-adaptive-key";
+            #binding-cells = <0>;
+            bindings = <&none>;
+            dead-keys = <GRAVE>;
+
+            trigger_one {
+                trigger-keys = <N0>;
+                bindings = <&kp A>;
+                min-prior-idle-ms = <100>;
+                max-prior-idle-ms = <300>;
+            };
+
+            trigger_two {
+                trigger-keys = <N1>;
+                bindings = <&kp A &kp B &kp C>;
+            };
+
+            trigger_three {
+                trigger-keys = <GRAVE>;
+                bindings = <&kp A>;
+            };
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+        default_layer {
+            bindings = <
+                &kp N0 &kp N1
+                &kp GRAVE &adaptive_key
+            >;
+        };
+    };
+};

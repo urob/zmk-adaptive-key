@@ -1,0 +1,45 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+description: Adaptive key behavior
+
+compatible: "zmk,behavior-adaptive-key"
+
+include: zero_param.yaml
+
+properties:
+  bindings:
+    type: phandle-array
+    description: |
+      Default binding if no trigger condition is met.
+    required: true
+  dead-keys:
+    type: array
+    description: |
+      List of key codes that are converted into dead keys.
+    default: []
+  delete-keycode:
+    type: int
+    description: |
+      Keycode to press when delete-prior is set.
+
+child-binding:
+  description: "An adaptive key condition"
+
+  properties:
+    bindings:
+      type: phandle-array
+      required: true
+    trigger-keys:
+      type: array
+      required: true
+    max-prior-idle-ms:
+      type: int
+      default: -1
+    min-prior-idle-ms:
+      type: int
+      default: -1
+    delete-prior:
+      type: boolean
+    strict-modifiers:
+      type: boolean

@@ -1,0 +1,5 @@
+kp_pressed: usage_page 0x07 keycode 0x27 implicit_mods 0x00 explicit_mods 0x00
+kp_released: usage_page 0x07 keycode 0x27 implicit_mods 0x00 explicit_mods 0x00
+No adaptive key match found, invoking default behavior
+Iterating 1 adaptive key bindings
+Releasing adaptive key binding
