@@ -206,6 +206,17 @@ This sets up a `shift-repeat` behavior that sends `&sk LSHFT` unless when
 pressed within 0.35 seconds of any alpha key, in which case it sends
 `&key_repeat`. Great for your homing thumb key!
 
+## `Kconfig` settings
+
+- `CONFIG_ZMK_ADAPTIVE_KEY_MAX_TRIGGER_CONDITIONS`: Maximum number of trigger
+  conditions per `adaptive-key` behavior. Defaults to 32.
+- `CONFIG_ZMK_ADAPTIVE_KEY_MAX_BINDINGS`: Maximum number of behaviors bound to a
+  trigger (i.e., length of macro sequence). Defaults to 4.
+- `CONFIG_ZMK_ADAPTIVE_KEY_WAIT_MS`: Wait time in milliseconds between key
+  presses when binding a macro sequence. Defaults to 5ms.
+- `CONFIG_ZMK_ADAPTIVE_KEY_TAP_MS`: Hold time per key tap when binding a macro
+  sequence. Defaults to 5ms.
+
 ## References
 
 - The behavior idea is inspired by the
