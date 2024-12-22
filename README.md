@@ -28,7 +28,7 @@ manifest:
     - name: zmk
       remote: urob # or zmkfirmware, see comment below
       import: app/west.yml
-    - name: zmk-leader-key
+    - name: zmk-adaptive-key
       remote: urob
   self:
     path: config
