@@ -44,8 +44,12 @@ ERROR: /behavior/leader-key POST_KERNEL 31 < /behaviors/foo POST_KERNEL 49
 
 The simplest way to getting the patch is to use my `zmk` remote, as configured
 in above manifest. This will automatically build against a patched version of
-Zephyr. If you are building using Github Actions, you may need to clear your
-cache (in the left sidebar on the `Actions` tab) for the changes to take effect.
+Zephyr. Alternatively, you can use upstream ZMK and directly overwrite Zephyr by
+adding
+[these lines](https://github.com/urob/zmk-adaptive-key/blob/433dab18883462f6f5b34baa30f1991345d864e8/tests/west.yml#L12-L36)
+to your `west.yml` manifest. In either case, if you are building using Github
+Actions, you may need to clear your cache (in the left sidebar on the `Actions`
+tab) for the changes to take effect.
 
 ## Configuration
 
