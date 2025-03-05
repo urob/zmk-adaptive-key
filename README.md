@@ -17,8 +17,6 @@ To load the module, add the following entries to `remotes` and `projects` in
 
 ```yaml
 manifest:
-  defaults:
-    revision: v0.1 # version to use for this module and for ZMK
   remotes:
     - name: zmkfirmware
       url-base: https://github.com/zmkfirmware
@@ -27,16 +25,18 @@ manifest:
   projects:
     - name: zmk
       remote: urob # or zmkfirmware, see comment below
+    revision: v0.2+fix-child-nodes
       import: app/west.yml
     - name: zmk-adaptive-key
       remote: urob
+    revision: v0.2 # set to same as ZMK version above
   self:
     path: config
 ```
 
 **Important:** The `zephyr` remote used by upstream ZMK currently contains a bug
 that under certain circumstances causes the build to fail. You will need to
-patch Zephyr if your build fails with an error message like:
+patch yours if your build fails with an error message like:
 
 ```
 ERROR: /behavior/leader-key POST_KERNEL 31 < /behaviors/foo POST_KERNEL 49
