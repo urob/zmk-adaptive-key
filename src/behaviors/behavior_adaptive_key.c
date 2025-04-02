@@ -150,6 +150,9 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
 
     bool match = false;
     const struct behavior_adaptive_key_config *config = dev->config;
+    LOG_DBG("Comparing adaptive key triggers to last key press: usage_page 0x%02X keycode 0x%02X "
+            "implicit_mods 0x%02X",
+            data->last_keycode.page, data->last_keycode.id, data->last_keycode.modifiers);
     for (int i = 0; i < config->triggers_len; i++) {
         if (trigger_is_true(&config->triggers[i], data, event.timestamp)) {
             match = true;
@@ -264,7 +267,8 @@ static int behavior_adaptive_key_init(const struct device *dev) {
 
 #define PROP_TRIGGERS(n, prop)                                                                     \
     {                                                                                              \
-        .bindings = TRANSFORMED_BINDINGS(n), .trigger_keys_len = DT_PROP_LEN(n, prop),             \
+        .bindings = TRANSFORMED_BINDINGS(n),                                                       \
+        .trigger_keys_len = DT_PROP_LEN(n, prop),                                                  \
         .trigger_keys = {LISTIFY(DT_PROP_LEN(n, prop), KEY_TRIGGER_ITEM, (, ), n, prop)},          \
         .min_idle_ms = DT_PROP(n, min_prior_idle_ms),                                              \
         .max_idle_ms = DT_PROP(n, max_prior_idle_ms),                                              \
