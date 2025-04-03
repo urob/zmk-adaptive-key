@@ -29,7 +29,7 @@ manifest:
       import: app/west.yml
     - name: zmk-adaptive-key
       remote: urob
-    revision: v0.2 # set to same as ZMK version above
+      revision: v0.2 # set to same as ZMK version above
   self:
     path: config
 ```
