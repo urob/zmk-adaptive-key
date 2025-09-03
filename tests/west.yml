@@ -9,12 +9,5 @@ manifest:
       remote: zmkfirmware
       revision: v0.3.0
       import: app/west.yml
-    # Apply patch to fix child nodes issue
-    - name: zephyr
-      remote: urob
-      revision: v3.5.0+zmk-fixes
-      clone-depth: 1
-      import:
-        name-allowlist: [lvgl]
   self:
     path: tests

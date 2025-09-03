@@ -24,32 +24,15 @@ manifest:
       url-base: https://github.com/urob
   projects:
     - name: zmk
-      remote: urob # or zmkfirmware, see comment below
-    revision: v0.2+fix-child-nodes
+      remote: zmkfirmware
+      revision: v0.3
       import: app/west.yml
     - name: zmk-adaptive-key
       remote: urob
-      revision: v0.2 # set to same as ZMK version above
+      revision: v0.3 # set to same as ZMK version above
   self:
     path: config
 ```
-
-**Important:** The `zephyr` remote used by upstream ZMK currently contains a bug
-that under certain circumstances causes the build to fail. You will need to
-patch yours if your build fails with an error message like:
-
-```
-ERROR: /behavior/leader-key POST_KERNEL 31 < /behaviors/foo POST_KERNEL 49
-```
-
-The simplest way to getting the patch is to use my `zmk` remote, as configured
-in above manifest. This will automatically build against a patched version of
-Zephyr. Alternatively, you can use upstream ZMK and directly overwrite Zephyr by
-adding
-[these lines](https://github.com/urob/zmk-adaptive-key/blob/433dab18883462f6f5b34baa30f1991345d864e8/tests/west.yml#L12-L36)
-to your `west.yml` manifest. In either case, if you are building using Github
-Actions, you may need to clear your cache (in the left sidebar on the `Actions`
-tab) for the changes to take effect.
 
 ## Configuration
 
