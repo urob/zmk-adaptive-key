@@ -206,11 +206,8 @@ static const struct device *devs[DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)];
 
 static int adaptive_key_keycode_state_changed_listener(const zmk_event_t *eh) {
     struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
-    if (ev == NULL || (!ev->state && !last_keycode_is_dead)) {
+    if (ev == NULL) {
         return ZMK_EV_EVENT_BUBBLE;
-    }
-    if (!ev->state && last_keycode_is_dead) {
-        return ZMK_EV_EVENT_HANDLED;
     }
 
     const struct zmk_key_param key = {
@@ -219,30 +216,64 @@ static int adaptive_key_keycode_state_changed_listener(const zmk_event_t *eh) {
         .id = ev->keycode,
     };
 
-    bool ignore = false;
+    bool is_dead_key = false;
     for (int i = 0; i < DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT); i++) {
-
         const struct device *dev = devs[i];
         if (dev == NULL) {
             continue;
         }
 
-        struct behavior_adaptive_key_data *data = dev->data;
-        data->last_keycode = key;
-        data->last_timestamp = ev->timestamp;
-
         const struct behavior_adaptive_key_config *config = dev->config;
-        if (key_list_contains(config->dead_keys, &key)) {
-            ignore = true;
+        if (config->dead_keys && key_list_contains(config->dead_keys, &key)) {
+            is_dead_key = true;
+            break;
         }
     }
 
-    last_keycode_is_dead = ignore && !last_keycode_is_dead;
-    if (last_keycode_is_dead) {
-        return ZMK_EV_EVENT_HANDLED;
-    }
+    /*
+     * ev->state == true -> keydown/press
+     * ev->state == false -> keyup/release
+     *
+     * Keydown: if this is a dead key, swallow the press and set the global dead flag.
+     * Keyup: if the global dead flag is set we only swallow the release when the
+     *       released key is a dead key (clear the global flag then). Do NOT swallow
+     *       other keys' releases.
+     */
 
-    return ZMK_EV_EVENT_BUBBLE;
+    if (ev->state) { /* keydown */
+        /* Update per-device last_keycode/timestamp for later adaptive-key comparisons */
+        for (int i = 0; i < DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT); i++) {
+            const struct device *dev = devs[i];
+            if (dev == NULL) {
+                continue;
+            }
+            struct behavior_adaptive_key_data *data = dev->data;
+            data->last_keycode = key;
+            data->last_timestamp = ev->timestamp;
+        }
+
+        /* Set (do not toggle) the global flag */
+        last_keycode_is_dead = is_dead_key;
+
+        if (is_dead_key) {
+            return ZMK_EV_EVENT_HANDLED;
+        }
+        return ZMK_EV_EVENT_BUBBLE;
+    } else { /* keyup */
+        /* If previously we ate a dead-key press, only swallow the release if this is that dead key
+         */
+        if (last_keycode_is_dead) {
+            if (is_dead_key) {
+                /* Clear the flag now that the dead key was released */
+                last_keycode_is_dead = false;
+                return ZMK_EV_EVENT_HANDLED;
+            }
+            /* It's not the dead key's release; do not swallow it. */
+            return ZMK_EV_EVENT_BUBBLE;
+        }
+
+        return ZMK_EV_EVENT_BUBBLE;
+    }
 }
 
 static int behavior_adaptive_key_init(const struct device *dev) {
