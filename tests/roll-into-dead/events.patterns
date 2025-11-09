@@ -1,0 +1,3 @@
+s/.*hid_listener_keycode/kp/p
+s/.*adaptive_key_behavior: //p
+s/.*No adaptive key/No adaptive key/p
