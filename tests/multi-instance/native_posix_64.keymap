@@ -1,0 +1,50 @@
+#include <dt-bindings/zmk/keys.h>
+#include <behaviors.dtsi>
+#include <dt-bindings/zmk/kscan_mock.h>
+
+/ {
+    behaviors {
+        ak1: ak1 {
+            compatible = "zmk,behavior-adaptive-key";
+            #binding-cells = <0>;
+            bindings = <&none>;
+            dead-keys = <N0>;
+
+            trigger_one {
+                trigger-keys = <N0>;
+                bindings = <&kp A>;
+            };
+        };
+
+        ak2: ak2 {
+            compatible = "zmk,behavior-adaptive-key";
+            #binding-cells = <0>;
+            bindings = <&none>;
+            dead-keys = <N1>;
+
+            trigger_one {
+                trigger-keys = <N1>;
+                bindings = <&kp B>;
+            };
+        };
+    };
+
+    keymap {
+        compatible = "zmk,keymap";
+        default_layer {
+            bindings = <
+                &kp N0 &kp N1
+                &ak1 &ak2
+            >;
+        };
+    };
+};
+
+&kscan {
+    events = <
+        ZMK_MOCK_PRESS(0,1,10)
+        ZMK_MOCK_RELEASE(0,1,200)
+        ZMK_MOCK_PRESS(1,1,100)
+        ZMK_MOCK_RELEASE(1,1,10)
+    >;
+};
