@@ -204,13 +204,27 @@ static bool key_list_contains(const struct key_list *list, const struct zmk_key_
 
 static const struct device *devs[DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)];
 
+static bool is_dead(const struct zmk_key_param *key) {
+    for (int i = 0; i < DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT); i++) {
+
+        const struct device *dev = devs[i];
+        if (dev == NULL) {
+            continue;
+        }
+
+        const struct behavior_adaptive_key_config *config = dev->config;
+        if (key_list_contains(config->dead_keys, key)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static int adaptive_key_keycode_state_changed_listener(const zmk_event_t *eh) {
     struct zmk_keycode_state_changed *ev = as_zmk_keycode_state_changed(eh);
     if (ev == NULL || (!ev->state && !last_keycode_is_dead)) {
         return ZMK_EV_EVENT_BUBBLE;
-    }
-    if (!ev->state && last_keycode_is_dead) {
-        return ZMK_EV_EVENT_HANDLED;
     }
 
     const struct zmk_key_param key = {
@@ -218,10 +232,15 @@ static int adaptive_key_keycode_state_changed_listener(const zmk_event_t *eh) {
         .page = ev->usage_page,
         .id = ev->keycode,
     };
+    if (!ev->state && last_keycode_is_dead) {
+        if (is_dead(&key)) {
+            return ZMK_EV_EVENT_HANDLED;
+        } else {
+            return ZMK_EV_EVENT_BUBBLE;
+        }
+    }
 
-    bool ignore = false;
     for (int i = 0; i < DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT); i++) {
-
         const struct device *dev = devs[i];
         if (dev == NULL) {
             continue;
@@ -230,14 +249,9 @@ static int adaptive_key_keycode_state_changed_listener(const zmk_event_t *eh) {
         struct behavior_adaptive_key_data *data = dev->data;
         data->last_keycode = key;
         data->last_timestamp = ev->timestamp;
-
-        const struct behavior_adaptive_key_config *config = dev->config;
-        if (key_list_contains(config->dead_keys, &key)) {
-            ignore = true;
-        }
     }
 
-    last_keycode_is_dead = ignore && !last_keycode_is_dead;
+    last_keycode_is_dead = is_dead(&key) && !last_keycode_is_dead;
     if (last_keycode_is_dead) {
         return ZMK_EV_EVENT_HANDLED;
     }
