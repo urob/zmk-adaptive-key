@@ -59,12 +59,12 @@ struct behavior_adaptive_key_config {
 };
 
 struct behavior_adaptive_key_data {
-    struct zmk_key_param last_keycode;
-    int64_t last_timestamp;
     const struct binding_list *pressed_bindings;
 };
 
-// Dead keys are global.
+// Global state.
+struct zmk_key_param last_keycode;
+int64_t last_timestamp;
 bool last_keycode_is_dead;
 
 static inline int press_adaptive_key_behavior(const struct behavior_adaptive_key_data *data,
@@ -115,8 +115,6 @@ static bool keys_are_equal(const struct zmk_key_param *key, const struct zmk_key
 
 static bool trigger_is_true(const struct trigger_cfg *trigger,
                             struct behavior_adaptive_key_data *data, int64_t timestamp) {
-
-    int64_t last_timestamp = data->last_timestamp;
     if (trigger->min_idle_ms > -1 && (timestamp - last_timestamp) < trigger->min_idle_ms) {
         return false;
     }
@@ -126,11 +124,8 @@ static bool trigger_is_true(const struct trigger_cfg *trigger,
     }
 
     for (int i = 0; i < trigger->trigger_keys_len; i++) {
-        if (keys_are_equal(&trigger->trigger_keys[i], &data->last_keycode,
-                           trigger->strict_modifiers)) {
-
+        if (keys_are_equal(&trigger->trigger_keys[i], &last_keycode, trigger->strict_modifiers)) {
             data->pressed_bindings = &trigger->bindings;
-
             return true;
         }
     }
@@ -143,7 +138,7 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     const struct device *dev = zmk_behavior_get_binding(binding->behavior_dev);
     struct behavior_adaptive_key_data *data = dev->data;
 
-    if (!data->last_keycode.page && data->pressed_bindings) {
+    if (!last_keycode.page && data->pressed_bindings) {
         LOG_ERR("Adaptive key pressed twice or no prior key press detected");
         return ZMK_BEHAVIOR_OPAQUE;
     }
@@ -152,7 +147,7 @@ static int on_keymap_binding_pressed(struct zmk_behavior_binding *binding,
     const struct behavior_adaptive_key_config *config = dev->config;
     LOG_DBG("Comparing adaptive key triggers to last key press: usage_page 0x%02X keycode 0x%02X "
             "implicit_mods 0x%02X",
-            data->last_keycode.page, data->last_keycode.id, data->last_keycode.modifiers);
+            last_keycode.page, last_keycode.id, last_keycode.modifiers);
     for (int i = 0; i < config->triggers_len; i++) {
         if (trigger_is_true(&config->triggers[i], data, event.timestamp)) {
             match = true;
@@ -205,6 +200,7 @@ static bool key_list_contains(const struct key_list *list, const struct zmk_key_
 static const struct device *devs[DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT)];
 
 static bool is_dead(const struct zmk_key_param *key) {
+    // Could merge devices during instantiation for better performance.
     for (int i = 0; i < DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT); i++) {
 
         const struct device *dev = devs[i];
@@ -232,6 +228,7 @@ static int adaptive_key_keycode_state_changed_listener(const zmk_event_t *eh) {
         .page = ev->usage_page,
         .id = ev->keycode,
     };
+
     if (!ev->state && last_keycode_is_dead) {
         if (is_dead(&key)) {
             return ZMK_EV_EVENT_HANDLED;
@@ -240,16 +237,8 @@ static int adaptive_key_keycode_state_changed_listener(const zmk_event_t *eh) {
         }
     }
 
-    for (int i = 0; i < DT_NUM_INST_STATUS_OKAY(DT_DRV_COMPAT); i++) {
-        const struct device *dev = devs[i];
-        if (dev == NULL) {
-            continue;
-        }
-
-        struct behavior_adaptive_key_data *data = dev->data;
-        data->last_keycode = key;
-        data->last_timestamp = ev->timestamp;
-    }
+    last_keycode = key;
+    last_timestamp = ev->timestamp;
 
     last_keycode_is_dead = is_dead(&key) && !last_keycode_is_dead;
     if (last_keycode_is_dead) {
