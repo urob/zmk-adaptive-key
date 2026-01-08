@@ -25,11 +25,11 @@ manifest:
   projects:
     - name: zmk
       remote: zmkfirmware
-      revision: v0.3
+      revision: v0.3 # Set to desired ZMK release.
       import: app/west.yml
     - name: zmk-adaptive-key
       remote: urob
-      revision: v0.3 # set to same as ZMK version above
+      revision: v0.3 # Should match ZMK release.
   self:
     path: config
 ```
